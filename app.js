@@ -1,4 +1,6 @@
-const URL='https://weaxqjesqtkkvodwnttx.supabase.co';const KEY='sb_publishable_x4p8fV11-JMp0C5W44OKrQ_3Ug_kJw8';const sb=supabase.createClient(URL,KEY);
+const SUPABASE_URL='https://weaxqjesqtkkvodwnttx.supabase.co';
+const SUPABASE_KEY='sb_publishable_x4p8fV11-JMp0C5W44OKrQ_3Ug_kJw8';
+const sb=globalThis.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 let user,profile,campaign,role,scene,tokens=[],fogs=[],assets=[],channel,tool='select',selected=null,drag=null,cam={x:0,y:0,z:.65};
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)]; const msg=t=>$('#authMsg').textContent=t;
 async function boot(){const {data:{session}}=await sb.auth.getSession();if(session) await enter(session.user);sb.auth.onAuthStateChange(async(_,s)=>{if(s&&!user)await enter(s.user);if(!s){user=null;$('#app').classList.add('hidden');$('#auth').classList.remove('hidden')}})}
@@ -25,9 +27,9 @@ $('#signupBtn').onclick=async()=>{
   if(password!==confirm)return msg('As senhas não coincidem.');
   $('#signupBtn').disabled=true;
   try{
-    const res=await fetch(`${URL}/functions/v1/signup-username`,{
+    const res=await fetch(`${SUPABASE_URL}/functions/v1/signup-username`,{
       method:'POST',
-      headers:{'Content-Type':'application/json','apikey':KEY},
+      headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},
       body:JSON.stringify({username,password})
     });
     const data=await res.json().catch(()=>({}));
