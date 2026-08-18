@@ -1,8 +1,159 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Umbra VTT</title><link rel="stylesheet" href="styles.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script></head><body>
-<div id="auth" class="auth"><div class="card login"><h1>UMBRA</h1><p>Virtual Tabletop</p><input id="username" autocomplete="username" maxlength="24" placeholder="Usuário"><input id="password" type="password" autocomplete="current-password" maxlength="72" placeholder="Senha"><input id="confirmPassword" class="signup-only hidden" type="password" autocomplete="new-password" maxlength="72" placeholder="Confirmar senha"><div class="row"><button id="loginBtn">Entrar</button><button id="signupBtn" class="ghost">Criar conta</button></div><small id="authMsg"></small><small class="muted">A Umbra usa apenas usuário e senha. Não é necessário e-mail.</small></div></div>
-<div id="app" class="hidden"><header><b>UMBRA</b><nav><button data-page="home">Menu</button><button data-page="campaigns">Campanhas</button><button data-page="sheets">Fichas</button></nav><div class="row"><span id="who"></span><button id="logoutBtn" class="ghost">Sair</button></div></header>
-<main><section id="home" class="page"><div class="hero"><h1>Sua mesa, em tempo real.</h1><p>Campanhas, cenas, biblioteca persistente, fog, iniciativa e fichas vinculadas.</p></div><div class="grid3"><article><h3>Campanhas</h3><p>Crie campanhas, abra sessões e aprove pedidos de entrada.</p></article><article><h3>Fichas</h3><p>Vincule suas fichas da Psyque à Umbra.</p></article><article><h3>Tabletop</h3><p>Tokens sincronizados, fog por área e cursores temporários.</p></article></div></section>
-<section id="campaigns" class="page hidden"><div class="title"><div><h2>Campanhas</h2><p>Suas mesas e convites.</p></div><button id="newCampaign">+ Criar campanha</button></div><div class="join"><input id="inviteCode" placeholder="Código de convite"><select id="joinRole"><option value="player">Jogador</option><option value="spectator">Espectador</option></select><button id="joinBtn">Pedir para entrar</button></div><div id="campaignList" class="cards"></div></section>
-<section id="sheets" class="page hidden"><div class="title"><div><h2>Fichas</h2><p>Fichas conectadas à sua conta.</p></div><button id="linkSheet">+ Vincular ficha</button></div><div id="sheetList" class="cards"></div><p class="muted">As fichas vinculadas são validadas diretamente na Psyque. Use Sincronizar para buscar os dados mais recentes.</p></section>
-<section id="tabletop" class="page hidden campaign-shell"><div class="campaignTop"><button id="backCampaigns" class="iconBtn ghost" title="Voltar">←</button><div class="campaignIdentity"><img id="campaignTopCover" class="campaignTopCover hidden" alt=""><div><b id="campaignName"></b><small id="campaignSubtitle"></small></div></div><span id="roleBadge" class="roleBadge"></span><div class="campaignTopSpacer"></div><label class="rpgClock">Horário RPG <input id="rpgTime" type="datetime-local"></label><button id="campaignSettingsBtn" class="ghost master-only">⚙ Configurações</button><button id="toggleSession"></button></div><div class="vtt"><aside id="masterTools"><h3>Ferramentas</h3><button data-tool="select">Selecionar</button><button data-tool="fog">Fog área</button><button data-tool="fogOpacity">Opacidade fog</button><button id="addToken">+ Token</button><button id="addMap">+ Mapa</button><input id="assetFile" type="file" accept="image/*" hidden><hr><h3>Iniciativa</h3><div id="initiative"></div></aside><div id="viewport"><div id="world"><img id="map"><div id="fogLayer"></div><div id="tokenLayer"></div><div id="cursorLayer"></div><div id="selectionBox"></div></div></div><aside id="sessionPanel"><h3>Sessão</h3><div id="members"></div><div id="requests"></div><hr><h3>Biblioteca</h3><div id="assets"></div></aside></div><div class="dock"><button data-library="token">Personagens / Tokens</button><button data-library="map">Mapas</button><button data-library="image">Imagens</button><button data-library="effect">Efeitos</button></div></section></main></div>
-<div id="campaignSettingsModal" class="modal hidden"><div class="modalBackdrop" data-close-settings></div><div class="campaignSettingsCard"><div class="modalHeader"><div><small>Campanha</small><h2>Configurações</h2></div><button id="closeCampaignSettings" class="ghost iconBtn">✕</button></div><div class="settingsCover"><div id="campaignCoverPreview" class="settingsCoverPreview"><span>Sem imagem</span></div><div><button id="chooseCampaignCover">Alterar imagem</button><button id="removeCampaignCover" class="ghost">Remover</button><input id="campaignCoverFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden><p class="muted">PNG, JPG, WEBP ou GIF.</p></div></div><label class="field">Nome da campanha<input id="campaignSettingsName" maxlength="80"></label><label class="field">Descrição<textarea id="campaignSettingsDescription" maxlength="800" rows="5"></textarea></label><div class="settingsMeta"><div><small>Seu papel</small><b id="campaignSettingsRole"></b></div><div><small>Campanha</small><b id="campaignSettingsId"></b></div></div><div class="modalActions"><button id="saveCampaignSettings">Salvar alterações</button></div></div></div><script src="app.js?v=20260815-2"></script><script src="psyque-integration.js?v=20260815-1"></script></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Umbra VTT</title>
+  <link rel="stylesheet" href="styles.css?v=20260818-1">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div id="auth" class="auth">
+  <div class="card login">
+    <h1>UMBRA</h1><p>Virtual Tabletop</p>
+    <input id="username" autocomplete="username" maxlength="24" placeholder="Usuário">
+    <input id="password" type="password" autocomplete="current-password" maxlength="72" placeholder="Senha">
+    <input id="confirmPassword" class="signup-only hidden" type="password" autocomplete="new-password" maxlength="72" placeholder="Confirmar senha">
+    <div class="row"><button id="loginBtn">Entrar</button><button id="signupBtn" class="ghost">Criar conta</button></div>
+    <small id="authMsg"></small><small class="muted">A Umbra usa apenas usuário e senha. Não é necessário e-mail.</small>
+  </div>
+</div>
+
+<div id="app" class="hidden">
+  <header>
+    <b>UMBRA</b>
+    <nav><button data-page="home">Menu</button><button data-page="campaigns">Campanhas</button><button data-page="sheets">Fichas</button></nav>
+    <div class="row"><span id="who"></span><button id="logoutBtn" class="ghost">Sair</button></div>
+  </header>
+  <main>
+    <section id="home" class="page">
+      <div class="hero"><h1>Sua mesa, em tempo real.</h1><p>Campanhas, mapas, tokens, iniciativa, dados e fichas vinculadas.</p></div>
+      <div class="grid3"><article><h3>Campanhas</h3><p>Crie mesas e convide jogadores.</p></article><article><h3>Fichas</h3><p>Vincule fichas da Psyque à Umbra.</p></article><article><h3>Tabletop</h3><p>Canvas amplo, tokens sincronizados, fog e ferramentas flutuantes.</p></article></div>
+    </section>
+
+    <section id="campaigns" class="page hidden">
+      <div class="title"><div><h2>Campanhas</h2><p>Suas mesas e convites.</p></div><button id="newCampaign">+ Criar campanha</button></div>
+      <div class="join"><input id="inviteCode" placeholder="Código de convite"><select id="joinRole"><option value="player">Jogador</option><option value="spectator">Espectador</option></select><button id="joinBtn">Pedir para entrar</button></div>
+      <div id="campaignList" class="cards"></div>
+    </section>
+
+    <section id="sheets" class="page hidden">
+      <div class="title"><div><h2>Fichas</h2><p>Fichas conectadas à sua conta.</p></div><button id="linkSheet">+ Vincular ficha</button></div>
+      <div id="sheetList" class="cards"></div>
+    </section>
+
+    <section id="tabletop" class="page hidden tabletopPage">
+      <div id="viewport">
+        <div id="world">
+          <img id="map" alt="">
+          <div id="fogLayer"></div>
+          <div id="tokenLayer"></div>
+          <div id="cursorLayer"></div>
+          <div id="selectionBox"></div>
+        </div>
+      </div>
+
+      <div class="vttTopLeft glassbar">
+        <button id="backCampaigns" class="iconBtn" title="Voltar">←</button>
+        <div class="campaignIdentity"><img id="campaignTopCover" class="campaignTopCover hidden" alt=""><div><b id="campaignName"></b><small id="campaignSubtitle"></small></div></div>
+        <span id="roleBadge" class="roleBadge"></span>
+      </div>
+
+      <div class="vttTopRight glassbar master-only">
+        <button id="inviteBtn" class="ghost">🔗 Convite</button>
+        <button id="campaignSettingsBtn" class="ghost">⚙</button>
+        <button id="toggleSession">Abrir sessão</button>
+      </div>
+
+      <aside id="toolRail" class="toolRail glassbar">
+        <button data-tool="select" class="active" title="Selecionar">↖</button>
+        <button data-tool="pan" title="Mover câmera">✥</button>
+        <button data-tool="fog" class="permission-fog" title="Criar fog">◩</button>
+        <button data-tool="fogOpacity" class="permission-fog" title="Opacidade do fog">◐</button>
+        <button id="addToken" class="permission-create-tokens" title="Adicionar token">＋</button>
+        <button id="addMap" class="permission-upload-assets" title="Adicionar mapa">▧</button>
+        <input id="assetFile" type="file" accept="image/*" hidden>
+      </aside>
+
+      <div class="zoomControls glassbar"><button id="zoomOut">−</button><span id="zoomLabel">65%</span><button id="zoomIn">+</button><button id="centerView" title="Centralizar">⌾</button></div>
+
+      <section id="sideHub" class="sideHub glassPanel">
+        <nav class="hubTabs">
+          <button data-hub="players" class="active">Players</button>
+          <button data-hub="initiative">Iniciativa</button>
+          <button data-hub="dice">Dados</button>
+          <button data-hub="time">Horário</button>
+        </nav>
+
+        <div id="hubPlayers" class="hubPane">
+          <div class="paneHead"><div><b>Players</b><small id="presenceCount">0 online</small></div></div>
+          <div id="members" class="memberList"></div>
+          <div id="requests" class="requestList master-only"></div>
+        </div>
+
+        <div id="hubInitiative" class="hubPane hidden">
+          <div class="paneHead"><div><b>Iniciativa</b><small>Ordem de combate</small></div><button id="addInitiative" class="permission-initiative">＋</button></div>
+          <div id="initiative" class="initiativeList"></div>
+        </div>
+
+        <div id="hubDice" class="hubPane hidden">
+          <div class="paneHead"><div><b>Dados</b><small>Clique várias vezes para acumular</small></div><button id="clearDice" class="ghost">Limpar</button></div>
+          <div id="diceTray" class="diceTray">
+            <button data-die="4">d4</button><button data-die="6">d6</button><button data-die="8">d8</button><button data-die="10">d10</button><button data-die="12">d12</button><button data-die="16">d16</button><button data-die="20">d20</button><button data-die="100">d100</button>
+          </div>
+          <div class="customDie"><span>1d</span><input id="customSides" type="number" min="2" max="10000" value="30"><button id="addCustomDie">Adicionar</button></div>
+          <div id="dicePool" class="dicePool muted">Nenhum dado selecionado.</div>
+          <button id="rollDice" class="rollButton">Rolar dados</button>
+          <div id="diceResult" class="diceResult hidden"></div>
+          <div id="diceHistory" class="diceHistory"></div>
+        </div>
+
+        <div id="hubTime" class="hubPane hidden">
+          <div class="paneHead"><div><b>Horário</b><small>Tempo dentro da campanha</small></div></div>
+          <div class="timeCard"><span>Horário atual</span><strong id="rpgTimeDisplay">—</strong><input id="rpgTime" type="datetime-local"><button id="saveRpgTime" class="permission-time">Salvar horário</button><small id="timeHint" class="muted">Somente o Mestre pode alterar, a menos que conceda permissão.</small></div>
+        </div>
+      </section>
+
+      <section id="libraryDock" class="libraryDock glassPanel">
+        <div class="libraryTabs"><button data-library="token" class="active">Tokens</button><button data-library="map">Mapas</button><button data-library="image">Imagens</button><button data-library="effect">Efeitos</button></div>
+        <div id="assets" class="assetStrip"></div>
+      </section>
+    </section>
+  </main>
+</div>
+
+<div id="permissionsModal" class="modal hidden">
+  <div class="modalBackdrop" data-close-permissions></div>
+  <div class="modalCard permissionCard">
+    <div class="modalHeader"><div><small>Jogador</small><h2 id="permissionPlayerName">Permissões</h2></div><button id="closePermissions" class="ghost iconBtn">✕</button></div>
+    <div class="permissionGrid">
+      <label><input type="checkbox" data-perm="move_own_tokens"> Mover os próprios tokens</label>
+      <label><input type="checkbox" data-perm="move_any_token"> Mover qualquer token</label>
+      <label><input type="checkbox" data-perm="create_tokens"> Criar tokens</label>
+      <label><input type="checkbox" data-perm="draw"> Desenhar</label>
+      <label><input type="checkbox" data-perm="fog"> Controlar fog</label>
+      <label><input type="checkbox" data-perm="manage_initiative"> Gerenciar iniciativa</label>
+      <label><input type="checkbox" data-perm="manage_time"> Alterar horário</label>
+      <label><input type="checkbox" data-perm="upload_assets"> Enviar mapas e imagens</label>
+    </div>
+    <div class="roleEditor"><span>Papel</span><select id="permissionRole"><option value="player">Jogador</option><option value="spectator">Espectador</option></select></div>
+    <div class="modalActions"><button id="savePermissions">Salvar permissões</button></div>
+  </div>
+</div>
+
+<div id="campaignSettingsModal" class="modal hidden">
+  <div class="modalBackdrop" data-close-settings></div>
+  <div class="modalCard">
+    <div class="modalHeader"><div><small>Campanha</small><h2>Configurações</h2></div><button id="closeCampaignSettings" class="ghost iconBtn">✕</button></div>
+    <div class="settingsCover"><div id="campaignCoverPreview" class="settingsCoverPreview"><span>Sem imagem</span></div><div><button id="chooseCampaignCover">Alterar imagem</button><button id="removeCampaignCover" class="ghost">Remover</button><input id="campaignCoverFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden></div></div>
+    <label class="field">Nome da campanha<input id="campaignSettingsName" maxlength="80"></label>
+    <label class="field">Descrição<textarea id="campaignSettingsDescription" maxlength="800" rows="5"></textarea></label>
+    <div class="settingsMeta"><div><small>Seu papel</small><b id="campaignSettingsRole"></b></div><div><small>Campanha</small><b id="campaignSettingsId"></b></div></div>
+    <div class="modalActions"><button id="saveCampaignSettings">Salvar alterações</button></div>
+  </div>
+</div>
+
+<script src="app.js?v=20260818-1"></script>
+<script src="psyque-integration.js?v=20260815-1"></script>
+</body>
+</html>
